@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+	<name>XMLDataStorePlugin</name>
+	<class>net.scientifichooliganism.xmlplugin.XMLDataStorePlugin</class>
+	<!--config-->
+		<!--key></key-->
+		<!--value></value-->
+		<!--module></module-->
+		<!--sequence></sequence-->
+	<!--/config-->
+	<action>
+		<id>0</id>
+		<!--name></name-->
+		<description>query data from an XML backed data store</description>
+		<module>XMLDataStorePlugin</module>
+		<class>net.scientifichooliganism.xmlplugin.XMLDataStorePlugin</class>
+		<!--url></url-->
+		<method>query</method>
+		<active>true</active>
+	</action>
+</plugin>

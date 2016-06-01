@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="XMLDataStorePlugin" default="build" basedir="..">
+	<!--The tstamp tag allows us to use the DSTAMP, TSTAMP, and TODAY properties
+	later. These are the date stamp, time stamp, and the date in the format of
+	four letter month, two digit day, and four digit year.-->
+	<tstamp />
+	<property name="src" value="${basedir}/src" />
+	<property name="lib" value="${basedir}/lib" />
+	<property name="bin" value="${basedir}/bin" />
+	<property name="doc" value="${basedir}/doc" />
+	<property name="jar" value="${basedir}/jar" />
+	<property name="tst" value="${basedir}/tst" />
+	<property name="zip" value="${basedir}/zip" />
+	<property name="rsrc" value="${basedir}/rsrc" />
+	<property name="rslt" value="${basedir}/junit_results" />
+	<!--property name="mnfst" value="${basedir}/META-INF/MANIFEST.MF" /-->
+	<property name="info.txt" value="${basedir}/info.txt" />
+	<property name="store" value="\\some_hostname" />
+	<property name="jarbasename" value="xmlplugin" />
+	<property name="jarextension" value=".jar" />
+	<!--sonar properties-->
+	<property name="sonar-project.properties" value="${basedir}/sonar-project.properties" />
+	<property name="sonar.projectName" value="${ant.project.name}" />
+	<property name="sonar.projectKey" value="net.scientifichooliganism.xmlplugin" />
+	<property name="sonar.projectDescription" value="A core plugin for the JavaPlug project implementing a data store for XML." />
+	<property name="sonar.projectVersion" value="${app_vrsn}" />
+	<property name="sonar.language" value="java" />
+	<property name="sonar.sourceEncoding" value="UTF-8" />
+	<property name="sonar.sources" value="src" />
+	<property name="sonar.tests" value="tst" />
+	<property name="sonar.junit.reportsPath" value="junit_results" />
+
+	<condition property="is_ver_set" >
+		<isset property="app_vrsn" />
+	</condition>
+
+	<path id="classpath">
+		<fileset dir="${lib}">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<target name="clean_log">
+		<delete file="${info.txt}" failonerror="false" verbose="true" />
+	</target>
+
+	<target name="clean_sonar">
+		<delete file="${sonar-project.properties}" failonerror="false" verbose="true" />
+	</target>
+
+	<target name="vrsn_avail" if="is_ver_set" depends="clean_log">
+		<echo message="Version Provided..." />
+		<echo message="Application:        ${ant.project.name}${line.separator}" file="${info.txt}" />
+		<echo message="Version:            ${app_vrsn}${line.separator}" file="${info.txt}" append="true" />
+	</target>
+
+	<target name="vrsn_unavail" unless="is_ver_set" depends="vrsn_avail">
+		<echo message="Version Not Provided..." />
+		<echo message="Application:        ${ant.project.name}${line.separator}" file="${info.txt}" />
+		<echo message="Version:            Developer Build${line.separator}" file="${info.txt}" append="true" />
+		<echo message="Built By:           ${user.name}${line.separator}" file="${info.txt}" append="true" />
+	</target>
+
+	<target name="log" depends="vrsn_unavail" description="">
+		<echo message="Writing info.txt..." />
+		<echo message="Build Date:         ${DSTAMP}${line.separator}" file="${info.txt}" append="true" />
+		<echo message="--------------------------------------------------------------------------------${line.separator}" file="${info.txt}" append="true" />
+		<echo message="Java Vendor:        ${java.vendor}${line.separator}" file="${info.txt}" append="true" />
+		<echo message="Java Version:       ${ant.java.version}${line.separator}" file="${info.txt}" append="true" />
+		<echo message="Ant Version:        ${ant.version}${line.separator}" file="${info.txt}" append="true" />
+		<echo message="Ant Java Version:   ${ant.java.version}${line.separator}" file="${info.txt}" append="true" />
+		<echo message="OS Name:            ${os.name}${line.separator}" file="${info.txt}" append="true" />
+		<echo message="OS Version:         ${os.version}${line.separator}" file="${info.txt}" append="true" />
+		<echo message="OS Arch:            ${os.arch}${line.separator}" file="${info.txt}" append="true" />
+	</target>
+
+	<target name="gen_sonar_properties" if="is_ver_set" depends="clean_sonar" description="">
+		<echoproperties prefix="sonar." destfile="${sonar-project.properties}" />
+	</target>
+
+	<target name="prep" description="">
+		<delete dir="${bin}" failonerror="false" includeemptydirs="true" />
+		<delete dir="${jar}" failonerror="false" includeemptydirs="true" />
+		<delete dir="${lib}" failonerror="false" includeemptydirs="true" />
+		<!--delete dir="${rslt}" failonerror="false" includeemptydirs="true" /-->
+		<!--delete dir="${doc}" failonerror="false" includeemptydirs="true" /-->
+		<delete dir="${zip}" failonerror="false" includeemptydirs="true" />
+		<mkdir dir="${bin}" />
+		<mkdir dir="${jar}" />
+		<mkdir dir="${lib}" />
+		<!--mkdir dir="${rslt}" /-->
+		<!--mkdir dir="${doc}" /-->
+		<mkdir dir="${zip}" />
+	</target>
+
+	<target name="clean_bin">
+		<delete includeemptydirs="true" verbose="true" >
+			<fileset dir="${bin}" includes="**/*" />
+		</delete>
+	</target>
+
+	<target name="clean_jar">
+		<delete includeemptydirs="true" verbose="true" >
+			<fileset dir="${jar}" includes="**/*" />
+		</delete>
+	</target>
+
+	<target name="clean_tests">
+		<delete includeemptydirs="true" verbose="true" >
+			<fileset dir="${tst}" includes="**/*.class" />
+		</delete>
+	</target>
+
+	<target name="clean_rslt">
+		<delete includeemptydirs="true" verbose="true" >
+			<fileset dir="${rslt}" includes="**/*" />
+		</delete>
+	</target>
+
+	<target name="clean_doc">
+		<delete includeemptydirs="true" verbose="true" >
+			<fileset dir="${doc}" includes="**/*" />
+		</delete>
+	</target>
+
+	<target name="clean_zip">
+		<delete includeemptydirs="true" verbose="true" >
+			<fileset dir="${zip}" includes="**/*" />
+		</delete>
+	</target>
+
+	<target name="clean" depends="clean_log,clean_sonar,clean_bin,clean_jar,clean_tests,clean_rslt,clean_doc,clean_zip" description=""/>
+
+	<target name="compile" depends="clean_bin,log" description="">
+		<javac srcdir="${src}" includeantruntime="false" destdir="${bin}" includes="**/*.java">
+			<classpath refid="classpath" />
+		</javac>
+	</target>
+
+	<target name="debug" depends="clean_bin" description="">
+		<javac srcdir="${src}" includeantruntime="false" destdir="${bin}" debug="on" debuglevel="lines,vars,source" includes="**/*.java">
+			<classpath refid="classpath" />
+		</javac>
+	</target>
+
+	<target name="compile_tests" depends="clean_tests" description="">
+		<javac srcdir="${tst}" includeantruntime="false" destdir="${tst}" includes="**/*.java">
+			<classpath>
+				<path refid="classpath" />
+				<pathelement path="${bin}" />
+			</classpath>
+		</javac>
+	</target>
+
+	<target name="run_tests" description="">
+		<junit printsummary="withOutAndErr" haltonerror="true" haltonfailure="true" showoutput="true" logfailedtests="true">
+			<classpath>
+				<path refid="classpath" />
+				<pathelement path="${bin}" />
+				<pathelement path="${tst}" />
+			</classpath>
+			<formatter type="xml" />
+			<test name="" todir="${rslt}"/>
+		</junit>
+	</target>
+
+	<target name="releasejar" if="is_ver_set" depends="clean_jar">
+		<jar destfile="${jar}/${jarbasename}-${app_vrsn}${jarextension}" whenmanifestonly="fail">
+			<fileset dir="${bin}" includes="**/*.class" />
+			<fileset dir="${basedir}" includes="info.txt" />
+		</jar>
+	</target>
+
+	<target name="jar" unless="is_ver_set" depends="releasejar" description="">
+		<jar destfile="${jar}/${jarbasename}${jarextension}" whenmanifestonly="fail">
+			<fileset dir="${bin}" includes="**/*.class" />
+			<fileset dir="${basedir}" includes="info.txt" />
+		</jar>
+	</target>
+
+	<target name="javadoc" depends="clean_doc" description="">
+		<javadoc destdir="${doc}" author="true" version="true" use="true" windowtitle="XML Data Store Plugin Documentation">
+			<fileset dir="${src}" />
+			<doctitle><![CDATA[<h1>XML Data Store Plugin Javadoc</h1>]]></doctitle>
+			<bottom><![CDATA[<i>Copyright &#169; 2016 John Tatum. All Rights Reserved.</i>]]></bottom>
+			<link offline="true" href="https://docs.oracle.com/javase/8/docs/api/" packagelistLoc="C:\tmp"/>
+		</javadoc>
+	</target>
+
+	<target name="zip" depends="clean_zip" description="">
+		<zip destfile="${zip}/XMLDataStorePlugin.zip" basedir="${bin}" whenempty="fail">
+			<zipfileset dir="${bin}" />
+			<zipfileset dir="${rsrc}" includes="XMLPlugin.xml" />
+		</zip>
+	</target>
+
+	<target name="build" depends="prep,compile,jar,zip" description=""/>
+
+	<target name="all" depends="prep,compile,compile_tests,run_tests,jar,javadoc,zip" description=""/>
+</project>
