@@ -48,7 +48,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 	}
 
 	public void validateQuery (String query) throws IllegalArgumentException {
-		System.out.println("validateQuery(String)");
+		System.out.println("XMLDataStorePlugin.validateQuery(String)");
 		if (query == null) {
 			throw new IllegalArgumentException("validateQuery(String) 1");
 		}
@@ -75,7 +75,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 	}
 
 	private String parseQuery (String strQuery) throws IllegalArgumentException, RuntimeException {
-		System.out.println("parseQuery(String)");
+		System.out.println("XMLDataStorePlugin.parseQuery(String)");
 		validateQuery(strQuery);
 		String ret = null;
 		strQuery = strQuery.toLowerCase();
