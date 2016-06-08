@@ -3,12 +3,14 @@
 	<name>XMLDataStorePlugin</name>
 	<class>net.scientifichooliganism.xmlplugin.XMLDataStorePlugin</class>
 	<config>
+		<id>0</id>
 		<module>XMLDataStorePlugin</module>
 		<sequence>0</sequence>
 		<key>active</key>
 		<value>true</value>
 	</config>
 	<config>
+		<id>1</id>
 		<module>XMLDataStorePlugin</module>
 		<sequence>1</sequence>
 		<key>storage</key>
@@ -22,7 +24,6 @@
 		<class>net.scientifichooliganism.xmlplugin.XMLDataStorePlugin</class>
 		<!--url></url-->
 		<method>addResource</method>
-		<!--active>true</active-->
 	</action>
 	<action>
 		<id>1</id>
@@ -32,6 +33,5 @@
 		<class>net.scientifichooliganism.xmlplugin.XMLDataStorePlugin</class>
 		<!--url></url-->
 		<method>query</method>
-		<!--active>true</active-->
 	</action>
 </plugin>
