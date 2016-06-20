@@ -3,14 +3,14 @@
 	<name>XMLDataStorePlugin</name>
 	<class>net.scientifichooliganism.xmlplugin.XMLDataStorePlugin</class>
 	<config>
-		<id>0</id>
+		<id>6</id>
 		<module>XMLDataStorePlugin</module>
 		<sequence>0</sequence>
 		<key>active</key>
 		<value>true</value>
 	</config>
 	<config>
-		<id>1</id>
+		<id>7</id>
 		<module>XMLDataStorePlugin</module>
 		<sequence>1</sequence>
 		<key>storage</key>
