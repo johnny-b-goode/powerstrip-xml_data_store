@@ -21,7 +21,7 @@
 	<!--sonar properties-->
 	<property name="sonar-project.properties" value="${basedir}/sonar-project.properties" />
 	<property name="sonar.projectName" value="${ant.project.name}" />
-	<property name="sonar.projectKey" value="net.scientifichooliganism.xmlplugin" />
+	<property name="sonar.projectKey" value="net.scientifichooliganism.xmldatastore" />
 	<property name="sonar.projectDescription" value="A core plugin for the JavaPlug project implementing a data store for XML." />
 	<property name="sonar.projectVersion" value="${app_vrsn}" />
 	<property name="sonar.language" value="java" />
@@ -194,7 +194,7 @@
 		</zip>
 	</target>
 
-	<target name="build" depends="prep,compile,jar,zip" description=""/>
+	<target name="build" depends="compile,jar,zip" description=""/>
 
 	<target name="all" depends="prep,compile,compile_tests,run_tests,jar,javadoc,zip" description=""/>
 </project>
