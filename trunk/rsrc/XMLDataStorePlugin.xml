@@ -16,6 +16,13 @@
 		<key>storage</key>
 		<value>true</value>
 	</config>
+	<config>
+		<id>8</id>
+		<module>XMLDataStorePlugin</module>
+		<sequence>2</sequence>
+		<key>depends</key>
+		<value>XMLPlugin</value>
+	</config>
 	<action>
 		<id>0</id>
 		<name>addResource</name>
