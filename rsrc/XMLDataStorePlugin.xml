@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
 	<name>XMLDataStorePlugin</name>
-	<class>net.scientifichooliganism.xmlplugin.XMLDataStorePlugin</class>
+	<class>net.scientifichooliganism.xmldatastore.XMLDataStorePlugin</class>
 	<config>
 		<id>6</id>
 		<module>XMLDataStorePlugin</module>
@@ -28,7 +28,7 @@
 		<name>addResource</name>
 		<description>add a resource to the collection of resources used by this plugin</description>
 		<module>XMLDataStorePlugin</module>
-		<class>net.scientifichooliganism.xmlplugin.XMLDataStorePlugin</class>
+		<class>net.scientifichooliganism.xmldatastore.XMLDataStorePlugin</class>
 		<!--url></url-->
 		<method>addResource</method>
 	</action>
@@ -37,7 +37,7 @@
 		<name>query</name>
 		<description>query data from an XML backed data store</description>
 		<module>XMLDataStorePlugin</module>
-		<class>net.scientifichooliganism.xmlplugin.XMLDataStorePlugin</class>
+		<class>net.scientifichooliganism.xmldatastore.XMLDataStorePlugin</class>
 		<!--url></url-->
 		<method>query</method>
 	</action>

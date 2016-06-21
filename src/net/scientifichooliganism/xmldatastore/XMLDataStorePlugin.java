@@ -182,7 +182,8 @@ public class XMLDataStorePlugin implements Plugin, Store {
 							Node n = nl.item(i);
 
                             String plugin = "XMLPlugin";
-                            Object result = ac.performAction(plugin, "net.scientifichooliganism.xmlplugin.XMLPlugin", "objectFromNode", new Object[]{n});
+                            System.out.println(n.getClass().getName());
+                            Object result = ac.performAction(plugin, "net.scientifichooliganism.xmldatastore." + plugin, "objectFromNode", new Object[]{(Object)n});
 							results.add(result);
 						}
 					}
@@ -223,7 +224,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 
 	public String[][] getActions() {
 		String actions[][] = new String [1][3];
-		//actions[0] = {"XMLDataStorePlugin", "net.scientifichooliganism.xmlplugin", "printMessage"};
+		//actions[0] = {"XMLDataStorePlugin", "net.scientifichooliganism.xmldatastore", "printMessage"};
 		return actions;
 	}
 
