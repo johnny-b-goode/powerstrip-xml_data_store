@@ -1,4 +1,4 @@
-package net.scientifichooliganism.xmlplugin;
+package net.scientifichooliganism.xmldatastore;
 
 import net.scientifichooliganism.javaplug.ActionCatalog;
 import net.scientifichooliganism.javaplug.interfaces.Plugin;
