@@ -37,7 +37,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 	}
 
 	public void validateQuery (String query) throws IllegalArgumentException {
-//		System.out.println("XMLDataStorePlugin.validateQuery(String)");
+		System.out.println("XMLDataStorePlugin.validateQuery(String)");
 		if (query == null) {
 			throw new IllegalArgumentException("validateQuery(String) 1");
 		}
@@ -60,11 +60,11 @@ public class XMLDataStorePlugin implements Plugin, Store {
 			throw new RuntimeException("validateQuery String) \"where\" must be followed by a condition");
 		}
 
-//		System.out.println("	query successfully validated: " + query);
+		System.out.println("	query successfully validated: " + query);
 	}
 
 	private String parseQuery (String strQuery) throws IllegalArgumentException, RuntimeException {
-//		System.out.println("XMLDataStorePlugin.parseQuery(String)");
+		System.out.println("XMLDataStorePlugin.parseQuery(String)");
 		validateQuery(strQuery);
 		String ret = null;
 		strQuery = strQuery.toLowerCase();
@@ -81,9 +81,9 @@ public class XMLDataStorePlugin implements Plugin, Store {
 			queryFrom = queryFrom.substring(0, queryFrom.indexOf("where")).trim();
 		}
 
-//		System.out.println("	queryBase:" + queryBase);
-//		System.out.println("	queryFrom:" + queryFrom);
-//		System.out.println("	queryWhere:" + String.valueOf(queryWhere));
+		System.out.println("	queryBase:" + queryBase);
+		System.out.println("	queryFrom:" + queryFrom);
+		System.out.println("	queryWhere:" + String.valueOf(queryWhere));
 
 		if ((queryFrom == null) || (queryFrom.length() <= 0)) {
 			throw new RuntimeException("parseQuery(String) looks like the from expression didn't survive parsing");
@@ -126,12 +126,12 @@ public class XMLDataStorePlugin implements Plugin, Store {
 			throw new RuntimeException("parseQuery(String) unfortunately this method cannot yet handle the level of sophistication embodied in the query");
 		}
 
-//		System.out.println("	ret: " + ret);
+		System.out.println("	ret: " + ret);
 		return ret;
 	}
 
 	public Collection query (String strQuery) throws IllegalArgumentException {
-//		System.out.println("XMLDataStorePlugin.query(String)");
+		System.out.println("XMLDataStorePlugin.query(String)");
 		strQuery = strQuery.trim().toLowerCase();
 		Vector results = new Vector();
 
@@ -148,24 +148,24 @@ public class XMLDataStorePlugin implements Plugin, Store {
 	plugin to be completely re-written at some point so, I guess I'll just
 	finish it as it is.*/
 	private Collection query (String resource, String strQuery) {
-//		System.out.println("XMLDataStorePlugin.query(String, String)");
-		//System.out.println("	resource: " + resource);
+		System.out.println("XMLDataStorePlugin.query(String, String)");
+		System.out.println("	resource: " + resource);
 		Vector results = new Vector();
 		File resourceFile = new File(resource);
 
 		try {
 			if (resourceFile.isFile()) {
-				//System.out.println("		resource is a file...");
+				System.out.println("		resource is a file...");
 				String resourceExtension = resourceFile.getCanonicalPath();
 
 				if (resourceExtension.contains(".")) {
 					resourceExtension = resourceExtension.substring(resourceExtension.lastIndexOf(".") + 1).trim().toLowerCase();
 				}
 
-				//System.out.println("		resourceExtension: " + resourceExtension);
+				System.out.println("		resourceExtension: " + resourceExtension);
 
 				if (resourceExtension.equals("xml")) {
-//					System.out.println("		resource is an xml file..." + resource);
+					System.out.println("		resource is an xml file..." + resource);
 					//DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 					DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 					Document doc = builder.parse(resourceFile);
@@ -182,8 +182,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 							Node n = nl.item(i);
 
                             String plugin = "XMLPlugin";
-                            System.out.println(n.getClass().getName());
-                            Object result = ac.performAction(plugin, "net.scientifichooliganism.xmldatastore." + plugin, "objectFromNode", new Object[]{(Object)n});
+                            Object result = ac.performAction(plugin, "net.scientifichooliganism.xmlplugin." + plugin, "objectFromNode", new Object[]{(Object)n});
 							results.add(result);
 						}
 					}
@@ -250,8 +249,8 @@ public class XMLDataStorePlugin implements Plugin, Store {
 			throw new IllegalArgumentException("addResource(String) resources already contains an object with the value passed");
 		}
 
-//		System.out.println("XMLDataStorePlugin.addResource(String)");
-//		System.out.println("	adding resource: " + resource);
+		System.out.println("XMLDataStorePlugin.addResource(String)");
+		System.out.println("	adding resource: " + resource);
 		resources.add(resource);
 	}
 
