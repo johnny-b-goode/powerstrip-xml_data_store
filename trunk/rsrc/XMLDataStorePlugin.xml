@@ -41,4 +41,12 @@
 		<!--url></url-->
 		<method>query</method>
 	</action>
+	<action>
+		<id>2</id>
+		<name>persist</name>
+		<description>Persists a ValueObject to persistent storage.</description>
+		<module>XMLDataStorePlugin</module>
+		<class>net.scientifichooliganism.xmldatastore.XMLDataStorePlugin</class>
+		<method>persist</method>
+	</action>
 </plugin>
