@@ -1,9 +1,12 @@
 package net.scientifichooliganism.xmldatastore;
 
 import net.scientifichooliganism.javaplug.ActionCatalog;
+import net.scientifichooliganism.javaplug.interfaces.Action;
 import net.scientifichooliganism.javaplug.interfaces.Plugin;
 import net.scientifichooliganism.javaplug.interfaces.Store;
 import net.scientifichooliganism.javaplug.interfaces.ValueObject;
+import net.scientifichooliganism.javaplug.vo.BaseAction;
+import net.scientifichooliganism.xmlplugin.XMLPlugin;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -51,6 +54,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 
 		return instance;
 	}
+
 
 	public void validateQuery (String query) throws IllegalArgumentException {
 //		System.out.println("XMLDataStorePlugin.validateQuery(String)");
@@ -199,6 +203,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
                                 Node n = nl.item(i);
 
                                 ValueObject result = (ValueObject) ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "objectFromNode", new Object[]{n});
+//								ValueObject result = (ValueObject)XMLPlugin.getInstance().objectFromNode(n);
                                 result.setLabel(result.getLabel() + "|" + strQuery);
                                 results.add(result);
                             }
@@ -226,7 +231,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
         // ValueObject's should have their file name at the front of their label at this point
         if(vo.getLabel() != null) {
             fileName = vo.getLabel().split("\\|")[0];
-            vo.setLabel(vo.getLabel().replaceAll(fileName + "|", ""));
+            vo.setLabel(vo.getLabel().replaceAll(fileName + "\\|", ""));
         } else {
             fileName = defaultFile;
         }
@@ -235,6 +240,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 	}
 
     private void persist(String resource, Object in){
+		ValueObject vo = (ValueObject)in;
         try {
             // resource should be a string to the exact file location
             File file = new File(resource);
@@ -246,23 +252,27 @@ public class XMLDataStorePlugin implements Plugin, Store {
                 document.getDocumentElement().normalize();
             } else {
                 document = builder.newDocument();
+				document.appendChild(document.createElement("data"));
                 file.createNewFile();
             }
 
             if(((ValueObject)in).getLabel() != null) {
-                String queryStr = ((ValueObject) in).getLabel();
+                String queryStr = vo.getLabel();
+
+				queryStr += "[id=" + vo.getID() + "]";
+
                 XPath xpath = XPathFactory.newInstance().newXPath();
                 XPathExpression expression = xpath.compile(queryStr);
 
                 Node node = (Node) expression.evaluate(document, XPathConstants.NODE);
                 if(node != null){
-                    document.removeChild(node);
+                    node.getParentNode().removeChild(node);
                 }
             }
-            Node resultNode = (Node)ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "nodeFromObject", new Object[]{in});
+            Node resultNode = (Node)ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "nodeFromObject", new Object[]{vo});
             Element element = resultNode.getOwnerDocument().getDocumentElement();
             Node newNode = document.importNode(element, true);
-            document.appendChild(newNode);
+            document.getDocumentElement().appendChild(newNode);
 
             Transformer transformer = TransformerFactory.newInstance().newTransformer();
 
@@ -280,6 +290,23 @@ public class XMLDataStorePlugin implements Plugin, Store {
 			//dl.query(null);
 			//dl.query("");
 			//dl.query(" ");
+
+			Action action = new BaseAction();
+			action.setName("My Action Name");
+			action.setMethod("New method");
+			action.setURL("google.com");
+
+			action.setID(42);
+
+			XMLDataStorePlugin.getInstance().persist(action);
+
+			Collection actions = XMLDataStorePlugin.getInstance().query("SELECT action FROM data");
+
+			Action changeAction = (Action)actions.iterator().next();
+
+			changeAction.setName("NEW NAME!");
+			XMLDataStorePlugin.getInstance().persist(changeAction);
+
 		}
 		catch (Exception exc) {
 			exc.printStackTrace();
