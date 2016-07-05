@@ -1,12 +1,12 @@
 package net.scientifichooliganism.xmldatastore;
 
 import net.scientifichooliganism.javaplug.ActionCatalog;
+import net.scientifichooliganism.javaplug.DataLayer;
 import net.scientifichooliganism.javaplug.interfaces.Action;
 import net.scientifichooliganism.javaplug.interfaces.Plugin;
 import net.scientifichooliganism.javaplug.interfaces.Store;
 import net.scientifichooliganism.javaplug.interfaces.ValueObject;
 import net.scientifichooliganism.javaplug.vo.BaseAction;
-import net.scientifichooliganism.xmlplugin.XMLPlugin;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -34,6 +34,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 	private static XMLDataStorePlugin instance;
 	private Vector<String> resources;
     private ActionCatalog ac;
+	private DataLayer dl;
 
     private static final String XML_PLUGIN = "XMLPlugin";
     private static final String XML_PLUGIN_PATH = "net.scientifichooliganism.xmlplugin." + XML_PLUGIN;
@@ -43,6 +44,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 	private XMLDataStorePlugin() {
 		resources = new Vector<String>();
         ac = ActionCatalog.getInstance();
+		dl = DataLayer.getInstance();
         addResource(defaultFile);
         System.out.println("XMLDataStorePlugin default file: " + defaultFile);
 	}
@@ -256,7 +258,12 @@ public class XMLDataStorePlugin implements Plugin, Store {
                 file.createNewFile();
             }
 
-            if(((ValueObject)in).getLabel() != null) {
+			if(vo.getID() == null){
+				vo.setID(dl.getUniqueID());
+			}
+
+			Node insertNode = null;
+            if(vo.getLabel() != null) {
                 String queryStr = vo.getLabel();
 
 				queryStr += "[id=" + vo.getID() + "]";
@@ -267,12 +274,19 @@ public class XMLDataStorePlugin implements Plugin, Store {
                 Node node = (Node) expression.evaluate(document, XPathConstants.NODE);
                 if(node != null){
                     node.getParentNode().removeChild(node);
+					insertNode = node.getParentNode();
                 }
             }
+
             Node resultNode = (Node)ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "nodeFromObject", new Object[]{vo});
             Element element = resultNode.getOwnerDocument().getDocumentElement();
-            Node newNode = document.importNode(element, true);
-            document.getDocumentElement().appendChild(newNode);
+			Node newNode = document.importNode(element, true);
+
+			if(insertNode == null) {
+				document.getDocumentElement().appendChild(newNode);
+			} else {
+				insertNode.appendChild(newNode);
+			}
 
             Transformer transformer = TransformerFactory.newInstance().newTransformer();
 
@@ -296,7 +310,6 @@ public class XMLDataStorePlugin implements Plugin, Store {
 			action.setMethod("New method");
 			action.setURL("google.com");
 
-			action.setID(42);
 
 			XMLDataStorePlugin.getInstance().persist(action);
 
