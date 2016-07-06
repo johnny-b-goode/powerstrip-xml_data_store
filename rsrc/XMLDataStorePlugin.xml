@@ -3,28 +3,30 @@
 	<name>XMLDataStorePlugin</name>
 	<class>net.scientifichooliganism.xmldatastore.XMLDataStorePlugin</class>
 	<config>
-		<id>6</id>
 		<module>XMLDataStorePlugin</module>
 		<sequence>0</sequence>
 		<key>active</key>
 		<value>true</value>
 	</config>
 	<config>
-		<id>7</id>
 		<module>XMLDataStorePlugin</module>
 		<sequence>1</sequence>
 		<key>storage</key>
 		<value>true</value>
 	</config>
 	<config>
-		<id>8</id>
 		<module>XMLDataStorePlugin</module>
 		<sequence>2</sequence>
 		<key>depends</key>
 		<value>XMLPlugin</value>
 	</config>
+	<config>
+		<module>XMLDataStorePlugin</module>
+		<sequence>3</sequence>
+		<key>default_file</key>
+		<value>XMLPersist.xml</value>
+	</config>
 	<action>
-		<id>0</id>
 		<name>addResource</name>
 		<description>add a resource to the collection of resources used by this plugin</description>
 		<module>XMLDataStorePlugin</module>
@@ -33,7 +35,6 @@
 		<method>addResource</method>
 	</action>
 	<action>
-		<id>1</id>
 		<name>query</name>
 		<description>query data from an XML backed data store</description>
 		<module>XMLDataStorePlugin</module>
@@ -42,7 +43,6 @@
 		<method>query</method>
 	</action>
 	<action>
-		<id>2</id>
 		<name>persist</name>
 		<description>Persists a ValueObject to persistent storage.</description>
 		<module>XMLDataStorePlugin</module>

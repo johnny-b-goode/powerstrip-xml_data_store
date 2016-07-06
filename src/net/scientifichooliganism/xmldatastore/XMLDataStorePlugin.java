@@ -2,10 +2,7 @@ package net.scientifichooliganism.xmldatastore;
 
 import net.scientifichooliganism.javaplug.ActionCatalog;
 import net.scientifichooliganism.javaplug.DataLayer;
-import net.scientifichooliganism.javaplug.interfaces.Action;
-import net.scientifichooliganism.javaplug.interfaces.Plugin;
-import net.scientifichooliganism.javaplug.interfaces.Store;
-import net.scientifichooliganism.javaplug.interfaces.ValueObject;
+import net.scientifichooliganism.javaplug.interfaces.*;
 import net.scientifichooliganism.javaplug.vo.BaseAction;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -23,7 +20,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Vector;
 
@@ -39,14 +35,14 @@ public class XMLDataStorePlugin implements Plugin, Store {
     private static final String XML_PLUGIN = "XMLPlugin";
     private static final String XML_PLUGIN_PATH = "net.scientifichooliganism.xmlplugin." + XML_PLUGIN;
 
-    private static String defaultFile = Paths.get(System.getProperty("user.dir"), "XMLPersist.xml").toString();
+    private String defaultFile;
+	private boolean configured = false;
+	private static boolean configuring;
 
 	private XMLDataStorePlugin() {
 		resources = new Vector<String>();
         ac = ActionCatalog.getInstance();
 		dl = DataLayer.getInstance();
-        addResource(defaultFile);
-        System.out.println("XMLDataStorePlugin default file: " + defaultFile);
 	}
 
 	public static XMLDataStorePlugin getInstance() {
@@ -54,9 +50,27 @@ public class XMLDataStorePlugin implements Plugin, Store {
 			instance = new XMLDataStorePlugin();
 		}
 
+		if(!instance.configured){
+			if(!configuring) {
+				configuring = true;
+				instance.tryConfigure();
+				configuring = false;
+			}
+		}
+
 		return instance;
 	}
 
+	public void tryConfigure(){
+		Vector<Configuration> configs = (Vector<Configuration>)DataLayer.getInstance().query("SELECT config FROM plugin");
+		for(Configuration config : configs) {
+			if (config.getKey().equals("default_file")){
+				defaultFile = config.getValue();
+				addResource(defaultFile);
+				configured = true;
+			}
+		}
+	}
 
 	public void validateQuery (String query) throws IllegalArgumentException {
 //		System.out.println("XMLDataStorePlugin.validateQuery(String)");
@@ -236,6 +250,9 @@ public class XMLDataStorePlugin implements Plugin, Store {
             vo.setLabel(vo.getLabel().replaceAll(fileName + "\\|", ""));
         } else {
             fileName = defaultFile;
+			if(fileName == null){
+				throw new RuntimeException("persist(Object) default file not configured in XMLDataStorePlugin");
+			}
         }
 
         persist(fileName, in);
