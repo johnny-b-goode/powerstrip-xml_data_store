@@ -26,6 +26,60 @@
 		<key>default_file</key>
 		<value>XMLPersist.xml</value>
 	</config>
+	<config>
+		<module>XMLDataStorePlugin</module>
+		<sequence>4</sequence>
+		<key>provides</key>
+		<value>net.scientifichooliganism.javaplug.interfaces.Action</value>
+	</config>
+	<config>
+		<module>XMLDataStorePlugin</module>
+		<sequence>5</sequence>
+		<key>provides</key>
+		<value>net.scientifichooliganism.javaplug.interfaces.Application</value>
+	</config>
+	<config>
+		<module>XMLDataStorePlugin</module>
+		<sequence>6</sequence>
+		<key>provides</key>
+		<value>net.scientifichooliganism.javaplug.interfaces.Environment</value>
+	</config>
+	<config>
+		<module>XMLDataStorePlugin</module>
+		<sequence>7</sequence>
+		<key>provides</key>
+		<value>net.scientifichooliganism.javaplug.interfaces.Event</value>
+	</config>
+	<config>
+		<module>XMLDataStorePlugin</module>
+		<sequence>8</sequence>
+		<key>provides</key>
+		<value>net.scientifichooliganism.javaplug.interfaces.Release</value>
+	</config>
+	<config>
+		<module>XMLDataStorePlugin</module>
+		<sequence>9</sequence>
+		<key>provides</key>
+		<value>net.scientifichooliganism.javaplug.interfaces.Task</value>
+	</config>
+	<config>
+		<module>XMLDataStorePlugin</module>
+		<sequence>10</sequence>
+		<key>provides</key>
+		<value>net.scientifichooliganism.javaplug.interfaces.TaskCategory</value>
+	</config>
+	<config>
+		<module>XMLDataStorePlugin</module>
+		<sequence>11</sequence>
+		<key>provides</key>
+		<value>net.scientifichooliganism.javaplug.interfaces.Transaction</value>
+	</config>
+	<config>
+		<module>XMLDataStorePlugin</module>
+		<sequence>12</sequence>
+		<key>provides</key>
+		<value>net.scientifichooliganism.javaplug.interfaces.ValueObject</value>
+	</config>
 	<action>
 		<name>addResource</name>
 		<description>add a resource to the collection of resources used by this plugin</description>
