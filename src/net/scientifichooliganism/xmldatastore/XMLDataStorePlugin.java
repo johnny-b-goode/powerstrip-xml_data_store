@@ -4,8 +4,11 @@ import net.scientifichooliganism.javaplug.ActionCatalog;
 import net.scientifichooliganism.javaplug.DataLayer;
 import net.scientifichooliganism.javaplug.interfaces.*;
 import net.scientifichooliganism.javaplug.query.Query;
+import net.scientifichooliganism.javaplug.query.QueryNode;
+import net.scientifichooliganism.javaplug.query.QueryOperator;
 import net.scientifichooliganism.javaplug.query.QueryResolver;
 import net.scientifichooliganism.javaplug.vo.BaseAction;
+import net.scientifichooliganism.xmlplugin.XMLPlugin;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -23,6 +26,8 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.util.Collection;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 
 /**
@@ -31,6 +36,7 @@ import java.util.Vector;
 public class XMLDataStorePlugin implements Plugin, Store {
 	private static XMLDataStorePlugin instance;
 	private Vector<String> resources;
+	private Vector<String> supportedTypes;
     private ActionCatalog ac;
 	private DataLayer dl;
 
@@ -43,6 +49,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 
 	private XMLDataStorePlugin() {
 		resources = new Vector<String>();
+		supportedTypes = new Vector<>();
         ac = ActionCatalog.getInstance();
 		dl = null;
 	}
@@ -68,12 +75,15 @@ public class XMLDataStorePlugin implements Plugin, Store {
 		dl = DataLayer.getInstance();
 		// Temporary try
 		try {
-			Vector<Configuration> configs = (Vector<Configuration>) dl.query("config FROM plugin");
+			Vector<Configuration> configs = (Vector<Configuration>) dl.query("Configuration FROM XMLDataStorePlugin");
 			for (Configuration config : configs) {
 				if (config.getKey().equals("default_file")) {
 					defaultFile = config.getValue();
 					addResource(defaultFile);
 					configured = true;
+				} else if(config.getKey().equals("provides") &&
+						config.getModule().equals("XMLDataStorePlugin")){
+					supportedTypes.add(config.getValue());
 				}
 			}
 		} catch (Exception exc){
@@ -109,76 +119,238 @@ public class XMLDataStorePlugin implements Plugin, Store {
 //		System.out.println("	query successfully validated: " + query);
 	}
 
+	private String getSimpleClassName(String fullyQualifiedName){
+		boolean found = false;
+		String simpleClassName = null;
+		while(!found){
+			try {
+				Class klass = Class.forName(fullyQualifiedName);
+                found = true;
+				simpleClassName = fullyQualifiedName.substring(fullyQualifiedName.lastIndexOf(".") + 1);
+			} catch(ClassNotFoundException exc){
+				// This is not yet a valid class name, it must have
+				// properties, remove a property so we can try again.
+                if(fullyQualifiedName.contains(".")) {
+					fullyQualifiedName = fullyQualifiedName.substring(0, fullyQualifiedName.lastIndexOf("."));
+				} else {
+					// Assume we found simple class name since no more . exist
+					simpleClassName = fullyQualifiedName;
+					found = true;
+				}
+			}
+		}
+
+		return simpleClassName;
+	}
+
+	private String getPredicateFromTree(QueryNode node){
+	    if(node.isOperator()){
+			QueryOperator operator = node.getOperator();
+			QueryNode leftChild = null, rightChild = null;
+            String operation = null;
+
+            if(node.getLeftChild() != null && node.getRightChild() != null){
+            	leftChild = node.getLeftChild();
+				rightChild = node.getRightChild();
+			} else {
+				throw new RuntimeException("getPredicateFromTree(QueryNode) bad tree");
+			}
+
+			switch(operator){
+				case AND:
+					operation = " and ";
+					break;
+				case OR:
+				    operation = " or ";
+					break;
+				case EQUAL:
+					operation = "=";
+                    break;
+				case GREATER_THAN:
+					operation = ">";
+					break;
+				case GREATER_EQUAL:
+				    operation = ">=";
+					break;
+				case LESS_THAN:
+				    operation = "<";
+					break;
+				case LESS_EQUAL:
+					operation = "<=";
+					break;
+				default:
+				    throw new RuntimeException("getPredicateFromTree(QueryNode) - bad operator " + operator.toString());
+			}
+
+			String leftSide = getPredicateFromTree(leftChild);
+			String rightSide = getPredicateFromTree(rightChild);
+			if(leftSide.split("\\[").length > leftSide.split("]").length) {
+				rightSide += "]";
+			}
+
+			return leftSide + operation + rightSide;
+		} else if(node.isProperty()){
+			String fullName = node.getValue();
+			String className = getSimpleClassName(fullName);
+			String property = fullName.substring(fullName.lastIndexOf(className) + className.length() + 1);
+
+			// check that only one . exists in the string
+			if(property.split("\\.").length - 1 == 1){
+				property = property.replace(".", "[");
+			} else {
+				throw new RuntimeException("getPredicateFromTree(QueryNode) - Bad Property Expression " + fullName);
+			}
+
+			return property;
+		} else if(node.isLiteral()){
+			return node.getValue();
+		}
+		return null;
+	}
+
+	private Set<String> classesInQuery(QueryNode node, Set<String> classNames){
+		if(node.isProperty()){
+			String name = getSimpleClassName(node.getValue());
+            classNames.add(name);
+		}
+		if(node.getLeftChild() != null){
+			classesInQuery(node.getLeftChild(), classNames);
+		}
+		if(node.getRightChild() != null){
+			classesInQuery(node.getRightChild(), classNames);
+		}
+
+		return classNames;
+	}
+
 	private String parseQuery (Query query) throws IllegalArgumentException, RuntimeException {
 		System.out.println("XMLDataStorePlugin.parseQuery(String)");
-//		validateQuery(strQuery);
-		String ret = null;
-		String queryBase = null;
-		if(query.getSelectValues().length > 0){
-			queryBase = query.getSelectValues()[0];
+        QueryNode tree = query.buildTree();
+		Set<String> classes = new TreeSet<>();
+		if(tree != null) {
+			tree.removeNots();
+			classes = classesInQuery(tree, new TreeSet<>());
+		}
+		String ret = "";
+        for(String klass : query.getSelectValues()){
+        	klass = getSimpleClassName(klass);
+        	classes.add(klass);
 		}
 
-		String queryWhere = null;
+		if(classes.size() > 1){
+		    for(String klass : classes){
+		    	ret += "//" + klass + " | ";
+			}
+			ret = ret.substring(0, ret.lastIndexOf(" | "));
+		} else if (classes.size() == 1){
+		    String predicate = null;
+            if(tree != null) {
+				predicate = getPredicateFromTree(tree);
+			}
+            String klass = (String)classes.toArray()[0];
+			klass = getSimpleClassName(klass);
+			ret += "//" + klass;
+            if(predicate != null) {
+				ret += "[" + predicate + "]";
+			}
+		}
 
-//		if (queryFrom.contains("where")) {
-//			queryWhere = queryFrom.substring(queryFrom.indexOf("where")).trim();
-//			queryWhere = queryWhere.substring(5).trim();
-//			queryFrom = queryFrom.substring(0, queryFrom.indexOf("where")).trim();
+		return ret.toLowerCase();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+////		validateQuery(strQuery);
+//		String queryBase = null;
+//		if(query.getSelectValues().length > 0){
+//			queryBase = query.getSelectValues()[0];
 //		}
-
-		System.out.println("	queryBase:" + queryBase);
-		System.out.println("	queryWhere:" + String.valueOf(queryWhere));
-
-
-
-
-		if ((queryBase == null) || (queryBase.length() <= 0)) {
-			throw new RuntimeException("parseQuery(String) looks like the query base didn't survive parsing");
-		}
-
-		if (! queryBase.equals("*")) {
-			ret = "//" + queryBase;
-		}
-
-		if ((queryWhere != null) && (queryWhere.length() > 0)) {
-			/*Realistically there is a bit of fun to be had here. I think what I would do is
-			tokenize the query into terms based on equality and then order those terms into a
-			tree based on operators. The tree would then be "collapsed" upward until the top level
-			node contains the completed xpath.*/
-			//EQUALITIES(IS, NULL, ETC)
-			//PARENS
-			//NOT
-			//AND
-			//OR
-
-			//EXAMPLES:
-			//	A && B
-			//	//plugin/config[module='XMLDataStorePlugin'][key='active']
-			//
-			//	(B || C)
-			//	//plugin/config[key='active']|//plugin/config[key="storage"]
-			//
-			//	A && (B || C)
-			//	//plugin/config[module='XMLDataStorePlugin'][key='active']|//plugin/config[module='XMLDataStorePlugin'][key="storage"]
-			//
-			//	A || (B && C)
-			//	//plugin/config[sequence='0']|//plugin/config[key='storage'][value='true']
-
-			throw new RuntimeException("parseQuery(String) unfortunately this method cannot yet handle the level of sophistication embodied in the query");
-		}
-
-//		System.out.println("	ret: " + ret);
-		return ret;
+//
+//		String queryWhere = null;
+//
+////		if (queryFrom.contains("where")) {
+////			queryWhere = queryFrom.substring(queryFrom.indexOf("where")).trim();
+////			queryWhere = queryWhere.substring(5).trim();
+////			queryFrom = queryFrom.substring(0, queryFrom.indexOf("where")).trim();
+////		}
+//
+//		System.out.println("	queryBase:" + queryBase);
+//		System.out.println("	queryWhere:" + String.valueOf(queryWhere));
+//
+//
+//
+//
+//		if ((queryBase == null) || (queryBase.length() <= 0)) {
+//			throw new RuntimeException("parseQuery(String) looks like the query base didn't survive parsing");
+//		}
+//
+//		if (! queryBase.equals("*")) {
+//			ret = "//" + queryBase;
+//		}
+//
+//		if ((queryWhere != null) && (queryWhere.length() > 0)) {
+//			/*Realistically there is a bit of fun to be had here. I think what I would do is
+//			tokenize the query into terms based on equality and then order those terms into a
+//			tree based on operators. The tree would then be "collapsed" upward until the top level
+//			node contains the completed xpath.*/
+//			//EQUALITIES(IS, NULL, ETC)
+//			//PARENS
+//			//NOT
+//			//AND
+//			//OR
+//
+//			//EXAMPLES:
+//			//	A && B
+//			//	//plugin/config[module='XMLDataStorePlugin'][key='active']
+//			//
+//			//	(B || C)
+//			//	//plugin/config[key='active']|//plugin/config[key="storage"]
+//			//
+//			//	A && (B || C)
+//			//	//plugin/config[module='XMLDataStorePlugin'][key='active']|//plugin/config[module='XMLDataStorePlugin'][key="storage"]
+//			//
+//			//	A || (B && C)
+//			//	//plugin/config[sequence='0']|//plugin/config[key='storage'][value='true']
+//
+//			throw new RuntimeException("parseQuery(String) unfortunately this method cannot yet handle the level of sophistication embodied in the query");
+//		}
+//
+////		System.out.println("	ret: " + ret);
+//		return ret;
 	}
 
 	public Collection query (Query query) throws IllegalArgumentException {
 		System.out.println("XMLDataStorePlugin.query(String)");
 		Vector results = new Vector();
 
+        String parsedQuery = parseQuery(query);
 		System.out.println("    " + resources.size() + " to query!");
 		for (String resource: resources) {
 			System.out.println("    Using resource: " + resource);
-			results.addAll(query(resource, parseQuery(query)));
+			results.addAll(query(resource, parsedQuery));
 		}
 
 		return results;
@@ -223,8 +395,8 @@ public class XMLDataStorePlugin implements Plugin, Store {
                             for (int i = 0; i < nl.getLength(); i++) {
                                 Node n = nl.item(i);
 
-                                ValueObject result = (ValueObject) ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "objectFromNode", new Object[]{n});
-//								ValueObject result = (ValueObject)XMLPlugin.getInstance().objectFromNode(n);
+//                                ValueObject result = (ValueObject) ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "objectFromNode", new Object[]{n});
+								ValueObject result = (ValueObject) XMLPlugin.getInstance().objectFromNode(n);
                                 result.setLabel(result.getLabel() + "|" + strQuery);
 
 								results.add(result);
@@ -323,6 +495,13 @@ public class XMLDataStorePlugin implements Plugin, Store {
 
 	/**a bunch of tests, I mean, a main method*/
 	public static void main (String [] args) {
+	    Query query = QueryResolver.getInstance().resolve("Action WHERE Action.data.value == \"10\"");
+		XMLDataStorePlugin plugin = XMLDataStorePlugin.getInstance();
+		plugin.addResource("C:\\Users\\tyler.hartwig\\Code\\SVN Repos\\JavaPlug-XMLDataStore\\trunk\\rsrc\\XMLDataStorePlugin.xml");
+
+		Collection results = plugin.query(query);
+
+		System.out.println(results);
 		try {
 			//dl.query(null);
 			//dl.query("");
@@ -332,7 +511,6 @@ public class XMLDataStorePlugin implements Plugin, Store {
 			action.setName("My Action Name");
 			action.setMethod("New method");
 			action.setURL("google.com");
-
 
 			XMLDataStorePlugin.getInstance().persist(action);
 
