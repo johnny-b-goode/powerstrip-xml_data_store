@@ -16,7 +16,7 @@
 	<!--property name="mnfst" value="${basedir}/META-INF/MANIFEST.MF" /-->
 	<property name="info.txt" value="${basedir}/info.txt" />
 	<property name="store" value="\\some_hostname" />
-	<property name="jarbasename" value="xmlplugin" />
+	<property name="jarbasename" value="XMLDataStorePlugin" />
 	<property name="jarextension" value=".jar" />
 	<!--sonar properties-->
 	<property name="sonar-project.properties" value="${basedir}/sonar-project.properties" />

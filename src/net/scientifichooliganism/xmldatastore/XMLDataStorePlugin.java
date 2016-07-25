@@ -8,7 +8,6 @@ import net.scientifichooliganism.javaplug.query.QueryNode;
 import net.scientifichooliganism.javaplug.query.QueryOperator;
 import net.scientifichooliganism.javaplug.query.QueryResolver;
 import net.scientifichooliganism.javaplug.vo.BaseAction;
-import net.scientifichooliganism.xmlplugin.XMLPlugin;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -395,8 +394,8 @@ public class XMLDataStorePlugin implements Plugin, Store {
                             for (int i = 0; i < nl.getLength(); i++) {
                                 Node n = nl.item(i);
 
-//                                ValueObject result = (ValueObject) ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "objectFromNode", new Object[]{n});
-								ValueObject result = (ValueObject) XMLPlugin.getInstance().objectFromNode(n);
+                                ValueObject result = (ValueObject) ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "objectFromNode", new Object[]{n});
+//								ValueObject result = (ValueObject) XMLPlugin.getInstance().objectFromNode(n);
                                 result.setLabel(result.getLabel() + "|" + strQuery);
 
 								results.add(result);
