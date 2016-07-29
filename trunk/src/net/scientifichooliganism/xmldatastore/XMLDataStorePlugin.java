@@ -2,12 +2,14 @@ package net.scientifichooliganism.xmldatastore;
 
 import net.scientifichooliganism.javaplug.ActionCatalog;
 import net.scientifichooliganism.javaplug.DataLayer;
+import net.scientifichooliganism.javaplug.annotations.Param;
 import net.scientifichooliganism.javaplug.interfaces.*;
 import net.scientifichooliganism.javaplug.query.Query;
 import net.scientifichooliganism.javaplug.query.QueryNode;
 import net.scientifichooliganism.javaplug.query.QueryOperator;
 import net.scientifichooliganism.javaplug.query.QueryResolver;
 import net.scientifichooliganism.javaplug.vo.BaseAction;
+import net.scientifichooliganism.xmlplugin.XMLPlugin;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -90,7 +92,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 		}
 	}
 
-	public void validateQuery (String query) throws IllegalArgumentException {
+	public void validateQuery (@Param(name="query") String query) throws IllegalArgumentException {
 //		System.out.println("XMLDataStorePlugin.validateQuery(String)");
 //        System.out.println("    Validating query: " + query);
 		if (query == null) {
@@ -194,9 +196,9 @@ public class XMLDataStorePlugin implements Plugin, Store {
 			String property = fullName.substring(fullName.lastIndexOf(className) + className.length() + 1);
 
 			// check that only one . exists in the string
-			if(property.split("\\.").length - 1 == 1){
+			if(property.split("\\.").length - 1 <= 1){
 				property = property.replace(".", "[");
-			} else {
+			} else if(property.split("\\.").length - 1 > 1){
 				throw new RuntimeException("getPredicateFromTree(QueryNode) - Bad Property Expression " + fullName);
 			}
 
@@ -223,7 +225,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 	}
 
 	private String parseQuery (Query query) throws IllegalArgumentException, RuntimeException {
-		System.out.println("XMLDataStorePlugin.parseQuery(String)");
+//		System.out.println("XMLDataStorePlugin.parseQuery(String)");
         QueryNode tree = query.buildTree();
 		Set<String> classes = new TreeSet<>();
 		if(tree != null) {
@@ -255,100 +257,13 @@ public class XMLDataStorePlugin implements Plugin, Store {
 		}
 
 		return ret.toLowerCase();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-////		validateQuery(strQuery);
-//		String queryBase = null;
-//		if(query.getSelectValues().length > 0){
-//			queryBase = query.getSelectValues()[0];
-//		}
-//
-//		String queryWhere = null;
-//
-////		if (queryFrom.contains("where")) {
-////			queryWhere = queryFrom.substring(queryFrom.indexOf("where")).trim();
-////			queryWhere = queryWhere.substring(5).trim();
-////			queryFrom = queryFrom.substring(0, queryFrom.indexOf("where")).trim();
-////		}
-//
-//		System.out.println("	queryBase:" + queryBase);
-//		System.out.println("	queryWhere:" + String.valueOf(queryWhere));
-//
-//
-//
-//
-//		if ((queryBase == null) || (queryBase.length() <= 0)) {
-//			throw new RuntimeException("parseQuery(String) looks like the query base didn't survive parsing");
-//		}
-//
-//		if (! queryBase.equals("*")) {
-//			ret = "//" + queryBase;
-//		}
-//
-//		if ((queryWhere != null) && (queryWhere.length() > 0)) {
-//			/*Realistically there is a bit of fun to be had here. I think what I would do is
-//			tokenize the query into terms based on equality and then order those terms into a
-//			tree based on operators. The tree would then be "collapsed" upward until the top level
-//			node contains the completed xpath.*/
-//			//EQUALITIES(IS, NULL, ETC)
-//			//PARENS
-//			//NOT
-//			//AND
-//			//OR
-//
-//			//EXAMPLES:
-//			//	A && B
-//			//	//plugin/config[module='XMLDataStorePlugin'][key='active']
-//			//
-//			//	(B || C)
-//			//	//plugin/config[key='active']|//plugin/config[key="storage"]
-//			//
-//			//	A && (B || C)
-//			//	//plugin/config[module='XMLDataStorePlugin'][key='active']|//plugin/config[module='XMLDataStorePlugin'][key="storage"]
-//			//
-//			//	A || (B && C)
-//			//	//plugin/config[sequence='0']|//plugin/config[key='storage'][value='true']
-//
-//			throw new RuntimeException("parseQuery(String) unfortunately this method cannot yet handle the level of sophistication embodied in the query");
-//		}
-//
-////		System.out.println("	ret: " + ret);
-//		return ret;
 	}
 
-	public Collection query (Query query) throws IllegalArgumentException {
-		System.out.println("XMLDataStorePlugin.query(String)");
+	public Collection query (@Param(name="query") Query query) throws IllegalArgumentException {
 		Vector results = new Vector();
 
         String parsedQuery = parseQuery(query);
-		System.out.println("    " + resources.size() + " to query!");
 		for (String resource: resources) {
-			System.out.println("    Using resource: " + resource);
 			results.addAll(query(resource, parsedQuery));
 		}
 
@@ -361,15 +276,15 @@ public class XMLDataStorePlugin implements Plugin, Store {
 	plugin to be completely re-written at some point so, I guess I'll just
 	finish it as it is.*/
 	private Collection query (String resource, String strQuery) {
-		System.out.println("XMLDataStorePlugin.query(String, String)");
-		System.out.println("	resource: " + resource);
+//		System.out.println("XMLDataStorePlugin.query(String, String)");
+//		System.out.println("	resource: " + resource);
 		Vector results = new Vector();
 		File resourceFile = new File(resource);
 
 		try {
             if(resourceFile.exists()) {
                 if (resourceFile.isFile()) {
-				System.out.println("		resource is a file...");
+//				System.out.println("		resource is a file...");
                     String resourceExtension = resourceFile.getCanonicalPath();
 
                     if (resourceExtension.contains(".")) {
@@ -394,8 +309,8 @@ public class XMLDataStorePlugin implements Plugin, Store {
                             for (int i = 0; i < nl.getLength(); i++) {
                                 Node n = nl.item(i);
 
-                                ValueObject result = (ValueObject) ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "objectFromNode", new Object[]{n});
-//								ValueObject result = (ValueObject) XMLPlugin.getInstance().objectFromNode(n);
+//                                ValueObject result = (ValueObject) ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "objectFromNode", new Object[]{n});
+								ValueObject result = (ValueObject) XMLPlugin.getInstance().objectFromNode(n);
                                 result.setLabel(result.getLabel() + "|" + strQuery);
 
 								results.add(result);
@@ -418,7 +333,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 		return results;
 	}
 
-	public void persist (Object in) throws IllegalArgumentException {
+	public void persist (@Param(name="object") Object in) throws IllegalArgumentException {
         ValueObject vo = (ValueObject)in;
         String fileName;
         // ValueObject's should have their file name at the front of their label at this point
@@ -494,13 +409,14 @@ public class XMLDataStorePlugin implements Plugin, Store {
 
 	/**a bunch of tests, I mean, a main method*/
 	public static void main (String [] args) {
-	    Query query = QueryResolver.getInstance().resolve("Action WHERE Action.data.value == \"10\"");
+	    Query query = QueryResolver.getInstance().resolve("Configuration FROM XMLDataStorePlugin WHERE !(Configuration.Sequence < \"3\") || Configuration.Module == \"Core\" && Configuration.Key == \"seq_length\"");
+
 		XMLDataStorePlugin plugin = XMLDataStorePlugin.getInstance();
 		plugin.addResource("C:\\Users\\tyler.hartwig\\Code\\SVN Repos\\JavaPlug-XMLDataStore\\trunk\\rsrc\\XMLDataStorePlugin.xml");
 
 		Collection results = plugin.query(query);
 
-		System.out.println(results);
+//		System.out.println(results);
 		try {
 			//dl.query(null);
 			//dl.query("");
@@ -554,8 +470,8 @@ public class XMLDataStorePlugin implements Plugin, Store {
 			throw new IllegalArgumentException("addResource(String) resources already contains an object with the value passed");
 		}
 
-		System.out.println("XMLDataStorePlugin.addResource(String)");
-		System.out.println("	adding resource: " + resource);
+//		System.out.println("XMLDataStorePlugin.addResource(String)");
+//		System.out.println("	adding resource: " + resource);
 		resources.add(resource);
 	}
 
