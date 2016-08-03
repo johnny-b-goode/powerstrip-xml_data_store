@@ -9,7 +9,6 @@ import net.scientifichooliganism.javaplug.query.QueryNode;
 import net.scientifichooliganism.javaplug.query.QueryOperator;
 import net.scientifichooliganism.javaplug.query.QueryResolver;
 import net.scientifichooliganism.javaplug.vo.BaseAction;
-import net.scientifichooliganism.xmlplugin.XMLPlugin;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -309,8 +308,8 @@ public class XMLDataStorePlugin implements Plugin, Store {
                             for (int i = 0; i < nl.getLength(); i++) {
                                 Node n = nl.item(i);
 
-//                                ValueObject result = (ValueObject) ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "objectFromNode", new Object[]{n});
-								ValueObject result = (ValueObject) XMLPlugin.getInstance().objectFromNode(n);
+                                ValueObject result = (ValueObject) ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "objectFromNode", new Object[]{n});
+//								ValueObject result = (ValueObject) XMLPlugin.getInstance().objectFromNode(n);
                                 result.setLabel(result.getLabel() + "|" + strQuery);
 
 								results.add(result);
@@ -352,9 +351,10 @@ public class XMLDataStorePlugin implements Plugin, Store {
 
     private void persist(String resource, Object in){
 		ValueObject vo = (ValueObject)in;
+        File file = null;
         try {
             // resource should be a string to the exact file location
-            File file = new File(resource);
+            file = new File(resource);
             Document document;
 
             DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -364,8 +364,8 @@ public class XMLDataStorePlugin implements Plugin, Store {
             } else {
                 document = builder.newDocument();
 				document.appendChild(document.createElement("data"));
-                file.createNewFile();
             }
+
 
 			if(vo.getID() == null){
 				vo.setID(dl.getUniqueID());
@@ -399,22 +399,27 @@ public class XMLDataStorePlugin implements Plugin, Store {
 
             Transformer transformer = TransformerFactory.newInstance().newTransformer();
 
+            if(!file.exists()){
+            	file.createNewFile();
+			}
             StreamResult result = new StreamResult(file);
             transformer.transform(new DOMSource(document), result);
+
         } catch (Exception exc){
             exc.printStackTrace();
-        }
+        } finally {
+		}
     }
 
 
 	/**a bunch of tests, I mean, a main method*/
 	public static void main (String [] args) {
-	    Query query = QueryResolver.getInstance().resolve("Configuration FROM XMLDataStorePlugin WHERE !(Configuration.Sequence < \"3\") || Configuration.Module == \"Core\" && Configuration.Key == \"seq_length\"");
 
 		XMLDataStorePlugin plugin = XMLDataStorePlugin.getInstance();
 		plugin.addResource("C:\\Users\\tyler.hartwig\\Code\\SVN Repos\\JavaPlug-XMLDataStore\\trunk\\rsrc\\XMLDataStorePlugin.xml");
 
-		Collection results = plugin.query(query);
+
+		plugin.defaultFile = "Persist.xml";
 
 //		System.out.println(results);
 		try {
@@ -427,7 +432,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 			action.setMethod("New method");
 			action.setURL("google.com");
 
-			XMLDataStorePlugin.getInstance().persist(action);
+			plugin.persist(action);
 
 			Collection actions = XMLDataStorePlugin.getInstance().query(QueryResolver.getInstance().resolve("Action FROM data"));
 
