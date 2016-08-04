@@ -201,7 +201,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 				throw new RuntimeException("getPredicateFromTree(QueryNode) - Bad Property Expression " + fullName);
 			}
 
-			return property;
+			return property.toLowerCase();
 		} else if(node.isLiteral()){
 			return node.getValue().replace("\"", "'");
 		}
@@ -239,7 +239,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 
 		if(classes.size() > 1){
 		    for(String klass : classes){
-		    	ret += "//" + klass + " | ";
+		    	ret += "//" + klass.toLowerCase() + " | ";
 			}
 			ret = ret.substring(0, ret.lastIndexOf(" | "));
 		} else if (classes.size() == 1){
@@ -249,13 +249,13 @@ public class XMLDataStorePlugin implements Plugin, Store {
 			}
             String klass = (String)classes.toArray()[0];
 			klass = getSimpleClassName(klass);
-			ret += "//" + klass;
+			ret += "//" + klass.toLowerCase();
             if(predicate != null) {
 				ret += "[" + predicate + "]";
 			}
 		}
 
-		return ret.toLowerCase();
+		return ret;
 	}
 
 	public Collection query (@Param(name="query") Query query) throws IllegalArgumentException {
@@ -263,7 +263,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 
         String parsedQuery = parseQuery(query);
 		for (String resource: resources) {
-		    System.out.println("Querying resource: " + resource);
+//		    System.out.println("Querying resource: " + resource);
 			results.addAll(query(resource, parsedQuery));
 		}
 
@@ -276,8 +276,8 @@ public class XMLDataStorePlugin implements Plugin, Store {
 	plugin to be completely re-written at some point so, I guess I'll just
 	finish it as it is.*/
 	private Collection query (String resource, String strQuery) {
-		System.out.println("XMLDataStorePlugin.query(String, String)");
-		System.out.println("	resource: " + resource);
+//		System.out.println("XMLDataStorePlugin.query(String, String)");
+//		System.out.println("	resource: " + resource);
 		Vector results = new Vector();
 		File resourceFile = new File(resource);
 
