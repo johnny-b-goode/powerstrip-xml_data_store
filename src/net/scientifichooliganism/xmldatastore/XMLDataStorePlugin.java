@@ -7,8 +7,8 @@ import net.scientifichooliganism.javaplug.interfaces.*;
 import net.scientifichooliganism.javaplug.query.Query;
 import net.scientifichooliganism.javaplug.query.QueryNode;
 import net.scientifichooliganism.javaplug.query.QueryOperator;
-import net.scientifichooliganism.javaplug.query.QueryResolver;
 import net.scientifichooliganism.javaplug.vo.BaseAction;
+import net.scientifichooliganism.xmlplugin.XMLPlugin;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -203,7 +203,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 
 			return property;
 		} else if(node.isLiteral()){
-			return node.getValue();
+			return node.getValue().replace("\"", "'");
 		}
 		return null;
 	}
@@ -263,6 +263,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 
         String parsedQuery = parseQuery(query);
 		for (String resource: resources) {
+		    System.out.println("Querying resource: " + resource);
 			results.addAll(query(resource, parsedQuery));
 		}
 
@@ -275,8 +276,8 @@ public class XMLDataStorePlugin implements Plugin, Store {
 	plugin to be completely re-written at some point so, I guess I'll just
 	finish it as it is.*/
 	private Collection query (String resource, String strQuery) {
-//		System.out.println("XMLDataStorePlugin.query(String, String)");
-//		System.out.println("	resource: " + resource);
+		System.out.println("XMLDataStorePlugin.query(String, String)");
+		System.out.println("	resource: " + resource);
 		Vector results = new Vector();
 		File resourceFile = new File(resource);
 
@@ -308,8 +309,8 @@ public class XMLDataStorePlugin implements Plugin, Store {
                             for (int i = 0; i < nl.getLength(); i++) {
                                 Node n = nl.item(i);
 
-                                ValueObject result = (ValueObject) ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "objectFromNode", new Object[]{n});
-//								ValueObject result = (ValueObject) XMLPlugin.getInstance().objectFromNode(n);
+//                                ValueObject result = (ValueObject) ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "objectFromNode", new Object[]{n});
+								ValueObject result = (ValueObject) XMLPlugin.getInstance().objectFromNode(n);
                                 result.setLabel(result.getLabel() + "|" + strQuery);
 
 								results.add(result);
@@ -388,6 +389,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
             }
 
             Node resultNode = (Node)ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "nodeFromObject", new Object[]{vo});
+//            Node resultNode = (Node) XMLPlugin.getInstance().nodeFromObject(vo);
             Element element = resultNode.getOwnerDocument().getDocumentElement();
 			Node newNode = document.importNode(element, true);
 
@@ -418,6 +420,9 @@ public class XMLDataStorePlugin implements Plugin, Store {
 		XMLDataStorePlugin plugin = XMLDataStorePlugin.getInstance();
 		plugin.addResource("C:\\Users\\tyler.hartwig\\Code\\SVN Repos\\JavaPlug-XMLDataStore\\trunk\\rsrc\\XMLDataStorePlugin.xml");
 
+		Query query = new Query("Configuration WHERE Configuration.Key == \"provides\"");
+		plugin.query(query);
+
 
 		plugin.defaultFile = "Persist.xml";
 
@@ -434,12 +439,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 
 			plugin.persist(action);
 
-			Collection actions = XMLDataStorePlugin.getInstance().query(QueryResolver.getInstance().resolve("Action FROM data"));
 
-			Action changeAction = (Action)actions.iterator().next();
-
-			changeAction.setName("NEW NAME!");
-			XMLDataStorePlugin.getInstance().persist(changeAction);
 
 		}
 		catch (Exception exc) {
