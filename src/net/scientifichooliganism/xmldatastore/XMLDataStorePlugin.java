@@ -370,8 +370,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 
 
 			if(vo.getID() == null){
-//				vo.setID(dl.getUniqueID());
-                vo.setID("42");
+				vo.setID(dl.getUniqueID());
 			}
 
 			Node insertNode = null;
