@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<plugin>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><plugin>
 	<name>XMLDataStorePlugin</name>
 	<class>net.scientifichooliganism.xmldatastore.XMLDataStorePlugin</class>
 	<configuration>

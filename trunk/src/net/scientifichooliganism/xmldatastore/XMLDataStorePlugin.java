@@ -8,7 +8,6 @@ import net.scientifichooliganism.javaplug.query.Query;
 import net.scientifichooliganism.javaplug.query.QueryNode;
 import net.scientifichooliganism.javaplug.query.QueryOperator;
 import net.scientifichooliganism.javaplug.vo.BaseAction;
-import net.scientifichooliganism.xmlplugin.XMLPlugin;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -25,6 +24,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
@@ -309,8 +309,8 @@ public class XMLDataStorePlugin implements Plugin, Store {
                             for (int i = 0; i < nl.getLength(); i++) {
                                 Node n = nl.item(i);
 
-//                                ValueObject result = (ValueObject) ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "objectFromNode", new Object[]{n});
-								ValueObject result = (ValueObject) XMLPlugin.getInstance().objectFromNode(n);
+                                ValueObject result = (ValueObject) ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "objectFromNode", new Object[]{n});
+//								ValueObject result = (ValueObject) XMLPlugin.getInstance().objectFromNode(n);
                                 result.setLabel(result.getLabel() + "|" + strQuery);
 
 								results.add(result);
@@ -353,6 +353,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
     private void persist(String resource, Object in){
 		ValueObject vo = (ValueObject)in;
         File file = null;
+        StreamResult result = null;
         try {
             // resource should be a string to the exact file location
             file = new File(resource);
@@ -369,27 +370,31 @@ public class XMLDataStorePlugin implements Plugin, Store {
 
 
 			if(vo.getID() == null){
-				vo.setID(dl.getUniqueID());
+//				vo.setID(dl.getUniqueID());
+                vo.setID("42");
 			}
 
 			Node insertNode = null;
+            String queryStr = null;
             if(vo.getLabel() != null) {
-                String queryStr = vo.getLabel();
+                queryStr = vo.getLabel();
+            } else {
+            	queryStr = "//" + xmlStringFromObject(vo);
+			}
 
-				queryStr += "[id=" + vo.getID() + "]";
+			queryStr += "[id=" + vo.getID() + "]";
 
-                XPath xpath = XPathFactory.newInstance().newXPath();
-                XPathExpression expression = xpath.compile(queryStr);
+			XPath xpath = XPathFactory.newInstance().newXPath();
+			XPathExpression expression = xpath.compile(queryStr);
 
-                Node node = (Node) expression.evaluate(document, XPathConstants.NODE);
-                if(node != null){
-                    node.getParentNode().removeChild(node);
-					insertNode = node.getParentNode();
-                }
-            }
+			Node node = (Node) expression.evaluate(document, XPathConstants.NODE);
+			if(node != null){
+				node.getParentNode().removeChild(node);
+				insertNode = node.getParentNode();
+			}
 
             Node resultNode = (Node)ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "nodeFromObject", new Object[]{vo});
-//            Node resultNode = (Node) XMLPlugin.getInstance().nodeFromObject(vo);
+//			Node resultNode = (Node) XMLPlugin.getInstance().nodeFromObject(vo);
             Element element = resultNode.getOwnerDocument().getDocumentElement();
 			Node newNode = document.importNode(element, true);
 
@@ -398,20 +403,138 @@ public class XMLDataStorePlugin implements Plugin, Store {
 			} else {
 				insertNode.appendChild(newNode);
 			}
+			document.normalize();
 
             Transformer transformer = TransformerFactory.newInstance().newTransformer();
 
             if(!file.exists()){
             	file.createNewFile();
 			}
-            StreamResult result = new StreamResult(file);
+            result = new StreamResult(new FileOutputStream(file));
             transformer.transform(new DOMSource(document), result);
 
         } catch (Exception exc){
             exc.printStackTrace();
         } finally {
+        	if(result != null) {
+        		try {
+					result.getOutputStream().close();
+				} catch(Exception exc){
+					exc.printStackTrace();
+				}
+			}
 		}
     }
+
+    public void remove (@Param(name="object") Object object) throws IllegalArgumentException {
+		ValueObject vo = (ValueObject)object;
+
+		String filename = null;
+		if(vo.getLabel() != null && !vo.getLabel().isEmpty()){
+			filename = vo.getLabel().split("\\|")[0];
+			if(filename != null && !resources.contains(filename)){
+				throw new IllegalArgumentException("remove(Object) file specified does not exist as a resource in XMLDataStorePlugin");
+			}
+			vo.setLabel(vo.getLabel().replaceFirst(filename + "|", ""));
+			remove(filename, vo);
+		} else {
+			for(String resource : resources){
+				remove(resource, object);
+			}
+		}
+	}
+
+	private void remove (String resource, Object object) {
+		ValueObject vo = (ValueObject)object;
+
+		if(vo.getID() == null){
+			throw new IllegalArgumentException("remove(String, Object) called on an object with a null ID");
+		}
+
+		File file = null;
+		StreamResult result = null;
+		try {
+			// resource should be a string to the exact file location
+			file = new File(resource);
+			Document document;
+
+			DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			if(file.exists()) {
+				document = builder.parse(file);
+				document.getDocumentElement().normalize();
+			} else {
+				throw new RuntimeException("remove(String, Object) resource specified does not exist");
+			}
+
+
+			String queryStr = null;
+			if(vo.getLabel() != null) {
+				queryStr = vo.getLabel();
+			} else {
+			    queryStr = "//" + xmlStringFromObject(vo);
+			}
+
+			queryStr += "[id=" + vo.getID() + "]";
+
+			XPath xpath = XPathFactory.newInstance().newXPath();
+			XPathExpression expression = xpath.compile(queryStr);
+
+			Node node = (Node) expression.evaluate(document, XPathConstants.NODE);
+			if(node != null){
+				node.getParentNode().removeChild(node);
+                document.normalize();
+			}
+
+			Transformer transformer = TransformerFactory.newInstance().newTransformer();
+
+			result = new StreamResult(new FileOutputStream(file));
+			transformer.transform(new DOMSource(document), result);
+
+		} catch (Exception exc){
+			exc.printStackTrace();
+		} finally {
+			if(result != null){
+				try {
+					result.getOutputStream().close();
+				} catch(Exception exc){
+					exc.printStackTrace();
+				}
+			}
+		}
+	}
+
+	private String xmlStringFromObject(Object object){
+	    String ret;
+		if(object instanceof Action) {
+			ret = "action";
+		} else if(object instanceof Application) {
+			ret = "application";
+		} else if(object instanceof Block) {
+			ret = "block";
+		} else if(object instanceof Configuration) {
+			ret = "configuration";
+		} else if(object instanceof Environment) {
+			ret = "environment";
+		} else if(object instanceof Event) {
+			ret = "event";
+		} else if(object instanceof MetaData) {
+			ret = "meta_data";
+		} else if(object instanceof Release) {
+			ret = "release";
+		} else if(object instanceof Task) {
+			ret = "task";
+		} else if(object instanceof TaskCategory) {
+			ret = "task_category";
+		} else if(object instanceof Transaction) {
+			ret = "transaction";
+		} else if(object instanceof ValueObject) {
+			ret = "value_object";
+		} else {
+			ret = object.getClass().getSimpleName();
+		}
+
+		return ret;
+	}
 
 
 	/**a bunch of tests, I mean, a main method*/
@@ -425,6 +548,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 
 
 		plugin.defaultFile = "Persist.xml";
+        plugin.addResource(plugin.defaultFile);
 
 //		System.out.println(results);
 		try {
@@ -439,8 +563,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 
 			plugin.persist(action);
 
-
-
+			plugin.remove(action);
 		}
 		catch (Exception exc) {
 			exc.printStackTrace();
