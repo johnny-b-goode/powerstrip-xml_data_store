@@ -8,6 +8,8 @@ import net.scientifichooliganism.javaplug.query.Query;
 import net.scientifichooliganism.javaplug.query.QueryNode;
 import net.scientifichooliganism.javaplug.query.QueryOperator;
 import net.scientifichooliganism.javaplug.vo.BaseAction;
+import net.scientifichooliganism.javaplug.vo.BaseMetaData;
+import net.scientifichooliganism.javaplug.vo.BaseValueObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -396,7 +398,13 @@ public class XMLDataStorePlugin implements Plugin, Store {
 //			Node resultNode = (Node) XMLPlugin.getInstance().nodeFromObject(vo);
             Element element = resultNode.getOwnerDocument().getDocumentElement();
 			Node newNode = document.importNode(element, true);
+			NodeList list = newNode.getChildNodes();
 
+			for(int i = 0; i < list.getLength(); i++){
+				System.out.println(list.item(i).getNodeName());
+			}
+
+			document.normalize();
 			if(insertNode == null) {
 				document.getDocumentElement().appendChild(newNode);
 			} else {
@@ -409,7 +417,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
             if(!file.exists()){
             	file.createNewFile();
 			}
-            result = new StreamResult(new FileOutputStream(file));
+            result = new StreamResult(file);
             transformer.transform(new DOMSource(document), result);
 
         } catch (Exception exc){
@@ -545,9 +553,17 @@ public class XMLDataStorePlugin implements Plugin, Store {
 		Query query = new Query("Configuration WHERE Configuration.Key == \"provides\"");
 		plugin.query(query);
 
+        MetaData data = new BaseMetaData();
+		data.setKey("key");
+		data.setValue("value");
+		ValueObject vo = new BaseValueObject();
+        vo.setID("1");
+		vo.addMetaData(data);
 
 		plugin.defaultFile = "Persist.xml";
         plugin.addResource(plugin.defaultFile);
+
+		plugin.persist(vo);
 
 //		System.out.println(results);
 		try {
