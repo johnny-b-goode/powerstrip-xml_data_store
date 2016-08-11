@@ -301,6 +301,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
                         Document doc = builder.parse(resourceFile);
                         //XPathFactory xpFactory = XPathFactory.newInstance();
                         XPath xpath = XPathFactory.newInstance().newXPath();
+						System.out.println("    compiling: " + strQuery);
                         XPathExpression expression = xpath.compile(strQuery);
                         doc.getDocumentElement().normalize();
 
@@ -339,9 +340,12 @@ public class XMLDataStorePlugin implements Plugin, Store {
         ValueObject vo = (ValueObject)in;
         String fileName;
         // ValueObject's should have their file name at the front of their label at this point
-        if(vo.getLabel() != null) {
+        if(vo.getLabel() != null && !vo.getLabel().isEmpty()) {
             fileName = vo.getLabel().split("\\|")[0];
-            vo.setLabel(vo.getLabel().replaceAll(fileName + "\\|", ""));
+            vo.setLabel(vo.getLabel().replaceFirst(fileName, ""));
+			if(vo.getLabel().indexOf('|') == 0){
+				vo.setLabel(vo.getLabel().substring(1));
+			}
         } else {
             fileName = defaultFile;
 			if(fileName == null){
@@ -386,6 +390,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 			queryStr += "[id=" + vo.getID() + "]";
 
 			XPath xpath = XPathFactory.newInstance().newXPath();
+			System.out.println("    compiling: " + queryStr);
 			XPathExpression expression = xpath.compile(queryStr);
 
 			Node node = (Node) expression.evaluate(document, XPathConstants.NODE);
@@ -417,7 +422,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
             if(!file.exists()){
             	file.createNewFile();
 			}
-            result = new StreamResult(file);
+            result = new StreamResult(new FileOutputStream(file));
             transformer.transform(new DOMSource(document), result);
 
         } catch (Exception exc){
@@ -439,7 +444,10 @@ public class XMLDataStorePlugin implements Plugin, Store {
 		String filename = null;
 		if(vo.getLabel() != null && !vo.getLabel().isEmpty()){
 			filename = vo.getLabel().split("\\|")[0];
-			vo.setLabel(vo.getLabel().replaceFirst(filename + "|", ""));
+			vo.setLabel(vo.getLabel().replaceFirst(filename, ""));
+			if(vo.getLabel().indexOf('|') == 0){
+				vo.setLabel(vo.getLabel().substring(1));
+			}
 			remove(filename, vo);
 		} else {
 			for(String resource : resources){
@@ -460,7 +468,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 		try {
 			// resource should be a string to the exact file location
 			file = new File(resource);
-			Document document;
+			Document document = null;
 
 			DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 			if(file.exists()) {
@@ -484,6 +492,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 			queryStr += "[id=" + vo.getID() + "]";
 
 			XPath xpath = XPathFactory.newInstance().newXPath();
+			System.out.println("    compiling: " + queryStr);
 			XPathExpression expression = xpath.compile(queryStr);
 
 			Node node = (Node) expression.evaluate(document, XPathConstants.NODE);
@@ -511,7 +520,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 	}
 
 	private String xmlStringFromObject(Object object){
-	    String ret;
+	    String ret = null;
 		if(object instanceof Action) {
 			ret = "action";
 		} else if(object instanceof Application) {
