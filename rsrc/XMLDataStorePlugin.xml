@@ -108,4 +108,11 @@
 		<class>net.scientifichooliganism.xmldatastore.XMLDataStorePlugin</class>
 		<method>persist</method>
 	</action>
+	<action>
+		<name>remove</name>
+		<description>Removes a ValueObject from persistent storage.</description>
+		<module>XMLDataStorePlugin</module>
+		<class>net.scientifichooliganism.xmldatastore.XMLDataStorePlugin</class>
+		<method>remove</method>
+	</action>
 </plugin>
