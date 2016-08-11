@@ -8,8 +8,8 @@ import net.scientifichooliganism.javaplug.query.Query;
 import net.scientifichooliganism.javaplug.query.QueryNode;
 import net.scientifichooliganism.javaplug.query.QueryOperator;
 import net.scientifichooliganism.javaplug.vo.BaseAction;
+import net.scientifichooliganism.javaplug.vo.BaseEnvironment;
 import net.scientifichooliganism.javaplug.vo.BaseMetaData;
-import net.scientifichooliganism.javaplug.vo.BaseValueObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -313,7 +313,8 @@ public class XMLDataStorePlugin implements Plugin, Store {
 
                                 ValueObject result = (ValueObject) ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "objectFromNode", new Object[]{n});
 //								ValueObject result = (ValueObject) XMLPlugin.getInstance().objectFromNode(n);
-                                result.setLabel(result.getLabel() + "|" + strQuery);
+								String label = "//" + xmlStringFromObject(result);
+                                result.setLabel(result.getLabel() + "|" + label);
 
 								results.add(result);
                             }
@@ -556,7 +557,8 @@ public class XMLDataStorePlugin implements Plugin, Store {
         MetaData data = new BaseMetaData();
 		data.setKey("key");
 		data.setValue("value");
-		ValueObject vo = new BaseValueObject();
+        data.setSequence(1);
+		Environment vo = new BaseEnvironment();
         vo.setID("1");
 		vo.addMetaData(data);
 
@@ -564,6 +566,10 @@ public class XMLDataStorePlugin implements Plugin, Store {
         plugin.addResource(plugin.defaultFile);
 
 		plugin.persist(vo);
+
+		Collection results = plugin.query(new Query("Environment"));
+
+		char dummy = 'd';
 
 //		System.out.println(results);
 		try {
