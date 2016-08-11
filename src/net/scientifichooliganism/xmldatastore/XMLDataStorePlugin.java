@@ -7,9 +7,9 @@ import net.scientifichooliganism.javaplug.interfaces.*;
 import net.scientifichooliganism.javaplug.query.Query;
 import net.scientifichooliganism.javaplug.query.QueryNode;
 import net.scientifichooliganism.javaplug.query.QueryOperator;
-import net.scientifichooliganism.javaplug.vo.BaseAction;
 import net.scientifichooliganism.javaplug.vo.BaseEnvironment;
 import net.scientifichooliganism.javaplug.vo.BaseMetaData;
+import net.scientifichooliganism.xmlplugin.XMLPlugin;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -311,8 +311,8 @@ public class XMLDataStorePlugin implements Plugin, Store {
                             for (int i = 0; i < nl.getLength(); i++) {
                                 Node n = nl.item(i);
 
-                                ValueObject result = (ValueObject) ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "objectFromNode", new Object[]{n});
-//								ValueObject result = (ValueObject) XMLPlugin.getInstance().objectFromNode(n);
+//                                ValueObject result = (ValueObject) ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "objectFromNode", new Object[]{n});
+								ValueObject result = (ValueObject) XMLPlugin.getInstance().objectFromNode(n);
 								String label = "//" + xmlStringFromObject(result);
                                 result.setLabel(result.getLabel() + "|" + label);
 
@@ -395,8 +395,8 @@ public class XMLDataStorePlugin implements Plugin, Store {
 				insertNode = node.getParentNode();
 			}
 
-            Node resultNode = (Node)ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "nodeFromObject", new Object[]{vo});
-//			Node resultNode = (Node) XMLPlugin.getInstance().nodeFromObject(vo);
+//            Node resultNode = (Node)ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "nodeFromObject", new Object[]{vo});
+			Node resultNode = (Node) XMLPlugin.getInstance().nodeFromObject(vo);
             Element element = resultNode.getOwnerDocument().getDocumentElement();
 			Node newNode = document.importNode(element, true);
 			NodeList list = newNode.getChildNodes();
@@ -440,9 +440,6 @@ public class XMLDataStorePlugin implements Plugin, Store {
 		String filename = null;
 		if(vo.getLabel() != null && !vo.getLabel().isEmpty()){
 			filename = vo.getLabel().split("\\|")[0];
-			if(filename != null && !resources.contains(filename)){
-				throw new IllegalArgumentException("remove(Object) file specified does not exist as a resource in XMLDataStorePlugin");
-			}
 			vo.setLabel(vo.getLabel().replaceFirst(filename + "|", ""));
 			remove(filename, vo);
 		} else {
@@ -478,6 +475,9 @@ public class XMLDataStorePlugin implements Plugin, Store {
 			String queryStr = null;
 			if(vo.getLabel() != null) {
 				queryStr = vo.getLabel();
+                if(queryStr.indexOf("|") == 0){
+                	queryStr = queryStr.substring(1);
+				}
 			} else {
 			    queryStr = "//" + xmlStringFromObject(vo);
 			}
@@ -566,29 +566,12 @@ public class XMLDataStorePlugin implements Plugin, Store {
         plugin.addResource(plugin.defaultFile);
 
 		plugin.persist(vo);
-
-		Collection results = plugin.query(new Query("Environment"));
+        Collection environments = plugin.query(new Query("Environment"));
+        Environment remove = (Environment)environments.iterator().next();
+		plugin.remove(remove);
 
 		char dummy = 'd';
 
-//		System.out.println(results);
-		try {
-			//dl.query(null);
-			//dl.query("");
-			//dl.query(" ");
-
-			Action action = new BaseAction();
-			action.setName("My Action Name");
-			action.setMethod("New method");
-			action.setURL("google.com");
-
-			plugin.persist(action);
-
-			plugin.remove(action);
-		}
-		catch (Exception exc) {
-			exc.printStackTrace();
-		}
 	}
 
 	public String[][] getActions() {
@@ -621,7 +604,8 @@ public class XMLDataStorePlugin implements Plugin, Store {
 
 //		System.out.println("XMLDataStorePlugin.addResource(String)");
 //		System.out.println("	adding resource: " + resource);
-		resources.add(resource);
+		File newResource = new File(resource);
+		resources.add(newResource.getAbsolutePath());
 	}
 
 	public Collection getResources () {
