@@ -9,7 +9,6 @@ import net.scientifichooliganism.javaplug.query.QueryNode;
 import net.scientifichooliganism.javaplug.query.QueryOperator;
 import net.scientifichooliganism.javaplug.vo.BaseEnvironment;
 import net.scientifichooliganism.javaplug.vo.BaseMetaData;
-import net.scientifichooliganism.xmlplugin.XMLPlugin;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -311,8 +310,8 @@ public class XMLDataStorePlugin implements Plugin, Store {
                             for (int i = 0; i < nl.getLength(); i++) {
                                 Node n = nl.item(i);
 
-//                                ValueObject result = (ValueObject) ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "objectFromNode", new Object[]{n});
-								ValueObject result = (ValueObject) XMLPlugin.getInstance().objectFromNode(n);
+                                ValueObject result = (ValueObject) ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "objectFromNode", new Object[]{n});
+//								ValueObject result = (ValueObject) XMLPlugin.getInstance().objectFromNode(n);
 								String label = "//" + xmlStringFromObject(result);
                                 result.setLabel(result.getLabel() + "|" + label);
 
@@ -395,8 +394,8 @@ public class XMLDataStorePlugin implements Plugin, Store {
 				insertNode = node.getParentNode();
 			}
 
-//            Node resultNode = (Node)ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "nodeFromObject", new Object[]{vo});
-			Node resultNode = (Node) XMLPlugin.getInstance().nodeFromObject(vo);
+            Node resultNode = (Node)ac.performAction(XML_PLUGIN, XML_PLUGIN_PATH, "nodeFromObject", new Object[]{vo});
+//			Node resultNode = (Node) XMLPlugin.getInstance().nodeFromObject(vo);
             Element element = resultNode.getOwnerDocument().getDocumentElement();
 			Node newNode = document.importNode(element, true);
 			NodeList list = newNode.getChildNodes();
