@@ -82,13 +82,13 @@
 		<delete dir="${bin}" failonerror="false" includeemptydirs="true" />
 		<delete dir="${jar}" failonerror="false" includeemptydirs="true" />
 		<delete dir="${lib}" failonerror="false" includeemptydirs="true" />
-		<!--delete dir="${rslt}" failonerror="false" includeemptydirs="true" /-->
+		<delete dir="${rslt}" failonerror="false" includeemptydirs="true" />
 		<!--delete dir="${doc}" failonerror="false" includeemptydirs="true" /-->
 		<delete dir="${zip}" failonerror="false" includeemptydirs="true" />
 		<mkdir dir="${bin}" />
 		<mkdir dir="${jar}" />
 		<mkdir dir="${lib}" />
-		<!--mkdir dir="${rslt}" /-->
+		<mkdir dir="${rslt}" />
 		<!--mkdir dir="${doc}" /-->
 		<mkdir dir="${zip}" />
 	</target>
@@ -165,7 +165,7 @@
 				<pathelement path="${tst}" />
 			</classpath>
 			<formatter type="xml" />
-			<test name="" todir="${rslt}"/>
+			<test name="net.scientifichooliganism.xmldatastore.XMLDataStorePluginTest" todir="${rslt}"/>
 		</junit>
 	</target>
 
