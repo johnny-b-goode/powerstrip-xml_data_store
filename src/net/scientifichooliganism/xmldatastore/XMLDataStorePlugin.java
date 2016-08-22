@@ -7,8 +7,6 @@ import net.scientifichooliganism.javaplug.interfaces.*;
 import net.scientifichooliganism.javaplug.query.Query;
 import net.scientifichooliganism.javaplug.query.QueryNode;
 import net.scientifichooliganism.javaplug.query.QueryOperator;
-import net.scientifichooliganism.javaplug.vo.BaseEnvironment;
-import net.scientifichooliganism.javaplug.vo.BaseMetaData;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -556,29 +554,6 @@ public class XMLDataStorePlugin implements Plugin, Store {
 	/**a bunch of tests, I mean, a main method*/
 	public static void main (String [] args) {
 
-		XMLDataStorePlugin plugin = XMLDataStorePlugin.getInstance();
-		plugin.addResource("C:\\Users\\tyler.hartwig\\Code\\SVN Repos\\JavaPlug-XMLDataStore\\trunk\\rsrc\\XMLDataStorePlugin.xml");
-
-		Query query = new Query("Configuration WHERE Configuration.Key == \"provides\"");
-		plugin.query(query);
-
-        MetaData data = new BaseMetaData();
-		data.setKey("key");
-		data.setValue("value");
-        data.setSequence(1);
-		Environment vo = new BaseEnvironment();
-        vo.setID("1");
-		vo.addMetaData(data);
-
-		plugin.defaultFile = "Persist.xml";
-        plugin.addResource(plugin.defaultFile);
-
-		plugin.persist(vo);
-        Collection environments = plugin.query(new Query("Environment"));
-        Environment remove = (Environment)environments.iterator().next();
-		plugin.remove(remove);
-
-		char dummy = 'd';
 
 	}
 
