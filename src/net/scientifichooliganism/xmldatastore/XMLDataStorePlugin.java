@@ -7,6 +7,9 @@ import net.scientifichooliganism.javaplug.interfaces.*;
 import net.scientifichooliganism.javaplug.query.Query;
 import net.scientifichooliganism.javaplug.query.QueryNode;
 import net.scientifichooliganism.javaplug.query.QueryOperator;
+import net.scientifichooliganism.javaplug.util.JavaLogger;
+import net.scientifichooliganism.javaplug.util.LumberJack;
+import net.scientifichooliganism.javaplug.util.SpringBoard;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -38,6 +41,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 	private Vector<String> supportedTypes;
     private ActionCatalog ac;
 	private DataLayer dl;
+    private LumberJack logger;
 
     private static final String XML_PLUGIN = "XMLPlugin";
     private static final String XML_PLUGIN_PATH = "net.scientifichooliganism.xmlplugin." + XML_PLUGIN;
@@ -51,6 +55,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 		supportedTypes = new Vector<>();
         ac = ActionCatalog.getInstance();
 		dl = null;
+		logger = JavaLogger.getInstanceForContext(this.getClass().getName());
 	}
 
 	public static XMLDataStorePlugin getInstance() {
@@ -86,7 +91,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 				}
 			}
 		} catch (Exception exc){
-
+			logger.logException(exc, SpringBoard.ERROR);
 		}
 	}
 
@@ -317,7 +322,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
 								results.add(result);
                             }
                         } catch (Exception exc) {
-                            exc.printStackTrace();
+                            logger.logException(exc, SpringBoard.ERROR);
                         }
                     }
                 } else {
@@ -328,7 +333,7 @@ public class XMLDataStorePlugin implements Plugin, Store {
             }
 		}
 		catch (Exception exc) {
-			exc.printStackTrace();
+            logger.logException(exc, SpringBoard.ERROR);
 		}
 
 		return results;
@@ -424,13 +429,13 @@ public class XMLDataStorePlugin implements Plugin, Store {
             transformer.transform(new DOMSource(document), result);
 
         } catch (Exception exc){
-            exc.printStackTrace();
+            logger.logException(exc, SpringBoard.ERROR);
         } finally {
         	if(result != null) {
         		try {
 					result.getOutputStream().close();
 				} catch(Exception exc){
-					exc.printStackTrace();
+                    logger.logException(exc, SpringBoard.ERROR);
 				}
 			}
 		}
@@ -505,13 +510,13 @@ public class XMLDataStorePlugin implements Plugin, Store {
 			transformer.transform(new DOMSource(document), result);
 
 		} catch (Exception exc){
-			exc.printStackTrace();
+            logger.logException(exc, SpringBoard.ERROR);
 		} finally {
 			if(result != null){
 				try {
 					result.getOutputStream().close();
 				} catch(Exception exc){
-					exc.printStackTrace();
+                    logger.logException(exc, SpringBoard.ERROR);
 				}
 			}
 		}
